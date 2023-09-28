@@ -1,1 +1,1 @@
-# movies-explorer-api
+This is my thesis movies-explorer-api
