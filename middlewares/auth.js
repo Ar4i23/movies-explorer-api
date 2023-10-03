@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 
-const { JWT_SECRET = 'movies' } = process.env;
-
+const { JWT_SECRET } = process.env;
 const UnauthorizedError = require('../errors/UnauthorizedError');
+
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
@@ -12,7 +12,6 @@ module.exports = (req, res, next) => {
   }
 
   const token = authorization.replace('Bearer ', '');
-
   let payload;
 
   try {
