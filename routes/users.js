@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const { regexEmail } = require('../utils.js/constans');
+const { regexEmail } = require('../utils/constans');
 const { getUserMe, updateUserMe } = require('../controllers/users');
 
 router.get('/me', getUserMe);

@@ -1,13 +1,14 @@
 const { HTTP_STATUS_OK, HTTP_STATUS_CREATED } = require('http2').constants;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
+const { userMissing, userExists } = require('../utils/constans');
 const BadReqestError = require('../errors/BadReqestError');
 const NotFoundError = require('../errors/NotFountError');
 const ConflictError = require('../errors/ConflictError');
 
-const { JWT_SECRET, NODE_ENV } = process.env;
-
+const { JWT_SECRET = 'movies' } = process.env;
 module.exports.getUserMe = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.status(HTTP_STATUS_OK).send({ email: user.email, name: user.name }))
@@ -30,9 +31,9 @@ module.exports.updateUserMe = (req, res, next) => {
       } else if (err.name === 'TypeError') {
         next(new BadReqestError(err.message));
       } else if (err.name === 'DocumentNotFoundError') {
-        next(new NotFoundError('Пользователь с таким id отсутствует'));
+        next(new NotFoundError(userMissing));
       } else if (err.name === 'MongoServerError') {
-        next(new ConflictError('Пользователь с таким email уже существует'));
+        next(new ConflictError(userExists));
       } else {
         next(err);
       }
@@ -58,7 +59,7 @@ module.exports.addUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadReqestError(err.message));
       } else if (err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже существует'));
+        next(new ConflictError(userExists));
       } else {
         next(err);
       }
@@ -69,13 +70,9 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'movies',
-        {
-          expiresIn: '7d',
-        },
-      );
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: '7d',
+      });
       res.status(HTTP_STATUS_OK).send({ token });
     })
     .catch((err) => next(err));

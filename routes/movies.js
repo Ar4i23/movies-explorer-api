@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const { regexUrl } = require('../utils.js/constans');
+const { regexUrl } = require('../utils/constans');
 const { getMovies, deleteMovie, addMovie } = require('../controllers/movies');
 
 const checkIdLength = () => ({

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-const { regexEmail } = require('../utils.js/constans');
+const { regexEmail } = require('../utils/constans');
 
 const userSchema = new mongoose.Schema(
   {
