@@ -24,13 +24,12 @@ router.post(
       image: Joi.string().required().pattern(regexUrl),
       trailerLink: Joi.string().required().pattern(regexUrl),
       thumbnail: Joi.string().required().pattern(regexUrl),
-      // owner: Joi.object().keys({}),
       movieId: Joi.number().required(),
       nameRU: Joi.string().required(),
       nameEN: Joi.string().required(),
     }),
   }),
-  addMovie,
+  addMovie
 );
 
 module.exports = router;
