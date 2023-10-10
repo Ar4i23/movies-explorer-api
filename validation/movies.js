@@ -29,7 +29,7 @@ router.post(
       nameEN: Joi.string().required(),
     }),
   }),
-  addMovie
+  addMovie,
 );
 
 module.exports = router;
