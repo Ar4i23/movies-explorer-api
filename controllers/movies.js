@@ -1,50 +1,21 @@
-const { HTTP_STATUS_OK, HTTP_STATUS_CREATED } = require('http2').constants;
 const Movie = require('../models/movie');
-const {
-  foreignFilm,
-  filmDeleted,
-  nonCoreId,
-  filmNotAvailable,
-} = require('../utils/constans');
-const BadReqestError = require('../errors/BadReqestError');
-const NotFoundError = require('../errors/NotFountError');
-const ForbiddenError = require('../errors/ForbiddenError');
+const BadRequestError = require('../errors/BadRequestError');
+const AccessDeniedError = require('../errors/AccessDeniedError');
+const NotFoundError = require('../errors/NotFoundError');
 
-module.exports.getMovies = (req, res, next) => {
+// Получение массива фильмов
+const getMovies = (req, res, next) => {
   Movie.find({ owner: req.user._id })
     .then((movies) => {
-      res.status(HTTP_STATUS_OK).send(movies);
+      res.send(movies);
     })
     .catch(next);
 };
 
-module.exports.deleteMovie = (req, res, next) => {
-  Movie.findById(req.params.movieId)
-    .orFail()
-    .then((movie) => {
-      if (!movie.owner.equals(req.user._id)) {
-        throw new ForbiddenError(foreignFilm);
-      }
-      Movie.deleteOne(movie)
-        .then(() => {
-          res.status(HTTP_STATUS_OK).send({ message: filmDeleted });
-        })
-        .catch((err) => {
-          next(err);
-        });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadReqestError(nonCoreId));
-      } else if (err.name === 'DocumentNotFoundError') {
-        next(new NotFoundError(filmNotAvailable));
-      } else {
-        next(err);
-      }
-    });
-};
-
-module.exports.addMovie = (req, res, next) => {
+// Создание нового фильма в базе данных mongoDB
+// для текущего пользователя.
+// Формирую в теле запроса нужные поля для заполнения.
+const createMovie = (req, res, next) => {
   const {
     country,
     director,
@@ -72,14 +43,49 @@ module.exports.addMovie = (req, res, next) => {
     nameEN,
     owner: req.user._id,
   })
-    .then((movie) => {
-      res.status(HTTP_STATUS_CREATED).send(movie);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadReqestError(err.message));
+    .then((movie) => res.send(movie))
+    .catch((e) => {
+      if (e.name === 'ValidationError') {
+        next(
+          new BadRequestError(
+            'Переданы некорректные данные при создании карточки фильма',
+          ),
+        );
       } else {
-        next(err);
+        next(e);
       }
     });
+};
+
+// Удаление фильма
+const deleteMovie = (req, res, next) => {
+  Movie.findById(req.params.movieId)
+    .orFail(() => {
+      throw new NotFoundError('Фильм с указанным _id не найден');
+    })
+    .then((movie) => {
+      const owner = movie.owner.toString();
+      if (req.user._id === owner) {
+        Movie.deleteOne(movie)
+          .then(() => {
+            res.send(movie);
+          })
+          .catch(next);
+      } else {
+        throw new AccessDeniedError('Невозможно удалить фильм');
+      }
+    })
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные для удаления фильма'));
+      } else {
+        next(e);
+      }
+    });
+};
+
+module.exports = {
+  getMovies,
+  createMovie,
+  deleteMovie,
 };

@@ -1,84 +1,71 @@
 const mongoose = require('mongoose');
-const { regexUrl } = require('../utils/constans');
 
-const cardSchema = new mongoose.Schema(
-  {
-    country: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    director: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    duration: {
-      type: Number,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    year: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    description: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
+const { Schema } = mongoose;
+const { ObjectId } = mongoose.Schema.Types;
+const isURL = require('validator/lib/isURL');
 
-    image: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-      validate: {
-        validator(url) {
-          return regexUrl.test(url);
-        },
-        message: 'Введен не верный формат URL',
-      },
+const movieSchema = Schema({
+  country: {
+    type: String,
+    required: true,
+  }, // Страна создания фильма
+  director: {
+    type: String,
+    required: true,
+  }, // Режиссёр фильма
+  duration: {
+    type: Number,
+    required: true,
+  }, // Длительность фильма
+  year: {
+    type: String,
+    required: true,
+  }, // Год выпуска фильма
+  description: {
+    type: String,
+    required: true,
+  }, // Описание фильма
+  image: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => isURL(v),
+      message: 'Неправильный формат ссылки',
     },
+  }, // Ссылка на постер к фильму
+  trailerLink: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => isURL(v),
+      message: 'Неправильный формат ссылки',
+    },
+  }, // Ссылка на трейлер фильма
+  thumbnail: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => isURL(v),
+      message: 'Неправильный формат ссылки',
+    },
+  }, // Миниатюрное изображение постера к фильму
+  owner: {
+    type: ObjectId,
+    ref: 'user',
+    required: true,
+  }, // _id пользователя, который сохранил фильм
+  movieId: {
+    type: Number,
+    required: true,
+  }, // id фильма, который содержится в ответе сервиса MoviesExplorer
+  nameRU: {
+    type: String,
+    required: true,
+  }, // Название фильма на русском языке
+  nameEN: {
+    type: String,
+    required: true,
+  }, // Название фильма на английском языке
+});
 
-    trailerLink: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-      validate: {
-        validator(url) {
-          return regexUrl.test(url);
-        },
-        message: 'Введен не верный формат URL',
-      },
-    },
-    thumbnail: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-      validate: {
-        validator(url) {
-          return regexUrl.test(url);
-        },
-        message: 'Введен не верный формат URL',
-      },
-    },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'user',
-      required: true,
-    },
-    movieId: {
-      type: Number,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    nameRU: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
-    nameEN: {
-      type: String,
-      required: [true, 'Обязательно для заполнения'],
-    },
-
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  { versionKey: false },
-);
-
-module.exports = mongoose.model('movie', cardSchema);
+module.exports = mongoose.model('movie', movieSchema);
