@@ -1,7 +1,7 @@
 {
   "name": "movies-explorer-api",
   "version": "1.0.0",
-  "description": "Бекенд дипломная работа 'Movies'",
+  "description": "Бекенд дипломная работа по заданию Яндекс-Практикума, приложение по поиску фильмов 'Movies'",
   "main": "app.js",
   "scripts": {
     "lint": "npx eslint .",
